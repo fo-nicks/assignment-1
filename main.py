@@ -60,8 +60,8 @@ class Database:
             for transaction in reversed(self.transactions):
                 result = transaction.get(args[0], None)
                 if result is not None: break
-        if result is None : print("NULL")
-        else: print(result)
+        if result is None : return "NULL"
+        else: return result
 
         
         
@@ -83,9 +83,10 @@ class Database:
 
     def end(self, args) :
         exit()
+
     def begin(self, args) :
         self.transactions.append({})
-        pass
+
     def rollback(self, args) :
         if len(self.transactions) == 1:
             print("NO TRANSACTION")
@@ -104,7 +105,7 @@ class Database:
 
     def commit(self, args) :
         if len(self.transactions) == 1:
-            print("NO TRANSACTION")
+            return "NO TRANSACTION"
         else: 
             self.commit_recurse()
 
@@ -120,7 +121,8 @@ class Database:
         if command is None:
             print("Error: unrecognized command '{}'".format(parsed[0]))
         else:
-            command(parsed[1:])
+            output = command(parsed[1:])
+            if output != None: print(output)
 
 def main() :
     db = Database();

@@ -92,9 +92,8 @@ class Database:
             print("NO TRANSACTION")
         else: 
             # leave at least one transaction open
-            for _ in reversed(self.transactions[1:]):
-                self.transactions.pop(0)
-    
+            self.transactions = [self.transactions[0]] 
+
     def commit_recurse(self):
         if len(self.transactions) != 1:
             transaction = self.transactions.pop()
@@ -124,10 +123,78 @@ class Database:
             output = command(parsed[1:])
             if output != None: print(output)
 
+def test_assert(test, result, expected):
+    if result != expected:
+        print("{}: unexpected test result '{}'. Expecting: {}".format(test, result, expected))
+    else:
+        print("{}: pass".format(test))
+
+def set_test():
+    db = Database()
+    db.set(['x', 1])
+    result = db.current_transaction()['x']
+    test_assert("set_test", result, 1)
+
+def get_test():
+    db = Database()
+    db.current_transaction()['x'] = 1
+    result = db.get(['x'])
+    test_assert("get_test", result, 1)
+
+def begin_test():
+    db = Database()
+    # there should be at least one default transaction
+    test_assert("begin_test-1", len(db.transactions), 1)
+    db.exec("BEGIN")
+    test_assert("begin_test-2", len(db.transactions), 2)
+    db.exec("BEGIN")
+    test_assert("begin_test-3", len(db.transactions), 3)
+    
+def rollback_test():
+    db = Database()
+    db.exec("SET x 0")
+    db.exec("BEGIN")
+    db.exec("SET x 1")
+    db.exec("ROLLBACK")
+    result = db.get(['x'])
+    test_assert("rollback_test", len(db.transactions), 1)
+    test_assert("rollback_test", result, 0)
+
+def commit_test():
+    db = Database()
+    db.exec("SET x 1")
+    db.exec("BEGIN")
+    db.exec("SET x 2")
+    db.exec("COMMIT")
+    test_assert("commit_test", db.current_transaction()['x'], 2)
+
+def transaction_mask_value_test():
+    db = Database()
+    db.exec("SET x 1")
+    result = db.get(['x'])
+    test_assert("transaction_mask_value_test-1", result, 1);
+    db.exec("BEGIN")
+    db.exec("SET x 2")
+    result = db.get(['x'])
+    test_assert("transaction_mask_value_test-2", result, 2);
+
+def tests() :
+    db = Database()
+    set_test()
+    get_test()
+    begin_test()
+    rollback_test()
+    commit_test()
+    transaction_mask_value_test()
+def test_1():
+    input = [("SET x 10\n", ""),
+             ("GET x\n", "10" )]
 def main() :
-    db = Database();
-    for line in sys.stdin:
-        db.exec(line)
+    if len(sys.argv) == 2 and sys.argv[1] == "test": tests()
+    else:
+        db = Database();
+        for line in sys.stdin:
+            db.exec(line)
 
 main()
 

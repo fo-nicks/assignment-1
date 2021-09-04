@@ -186,9 +186,7 @@ def tests() :
     rollback_test()
     commit_test()
     transaction_mask_value_test()
-def test_1():
-    input = [("SET x 10\n", ""),
-             ("GET x\n", "10" )]
+
 def main() :
     if len(sys.argv) == 2 and sys.argv[1] == "test": tests()
     else:

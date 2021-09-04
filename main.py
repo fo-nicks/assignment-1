@@ -122,12 +122,9 @@ class Database:
         else:
             command(parsed[1:])
 
-
 def main() :
     db = Database();
-    # TODO: detect EOF
-    # TODO: REPL
-    for line in fileinput.input():
+    for line in sys.stdin:
         db.exec(line)
 
 main()
